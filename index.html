@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reclamation HQ — Operator Leaderboard</title>
+
+  <!-- Fuentes iguales a adventure.wietsevenema.eu -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&family=Press+Start+2P&display=swap" rel="stylesheet" />
+
+  <!-- ===================================================================== -->
+  <!-- ZONA SUPERIOR · CARGA INICIAL EMBEBIDA (roster de usuarios + apikeys)  -->
+  <!-- La gestión de jugadores se alimenta de aquí (no de un .json externo).  -->
+  <!-- Edítalo para cambiar los jugadores de fábrica; "Restaurar" vuelve aquí.-->
+  <!-- ===================================================================== -->
+  <script id="seed-roster" type="application/json">
+[
+  { "name": "Solar Dawn",    "display_name": "Solar Dawn",    "api_key": "c760ae5e6290def4cf9c7dd153c8352bfa0ff13fc343c09cde892514a4a8246e" },
+  { "name": "Sergio",        "display_name": "Sergio",        "api_key": "19df4f592c092cbb9c865d0e7df493bc43c9f6386ed8e51cda191cf6953c8c88" },
+  { "name": "Santi",         "display_name": "Santi",         "api_key": "1e21fadbaa4bc2a37216800a0486dbb02e992c41ca9f62ec2aef08be68612ca7" },
+  { "name": "Cesar",         "display_name": "Cesar",         "api_key": "4c51b798cfd3b0f7ad6eb5eb29355f4344f89b7b9a114bc625616a1016543629" },
+  { "name": "Leandro",       "display_name": "Leandro",       "api_key": "0ccd660b3d23c8adef013f645010da0dc4b593b98db2e18cb022f3f51ba78a54" },
+  { "name": "Andres",        "display_name": "Andres",        "api_key": "4d070f53d281a1bade2154fb8d0a9fd8c0b693acfd3d59bf0da42050eb2fce94" },
+  { "name": "K@rl0s",        "display_name": "K@rl0s",        "api_key": "779f556ed7a65b5cdfde1fcc853f9cfe00a4c1dc9cc219d400cc6fea8f329d21" },
+  { "name": "Azure Thunder", "display_name": "Azure Thunder", "api_key": "d41a2c3cdb4194a56fc4f276850ef2ae1a16fc233174c64018e669f0789881b1" },
+  { "name": "JoseA",         "display_name": "JoseA",         "api_key": "34e7b6924fe653aba44ba038727652d78fb1e76d0278a0ba168a3f9394f8357a", "exclude_ranking": true },
+  { "name": "azam",          "display_name": "azam",          "api_key": "905e6922296b2ce942347a76486826ef4a24b1caa67cd9dac889ad9ca39c651b", "exclude_ranking": true },
+  { "name": "Alfonso",       "display_name": "Alfonso",       "api_key": "283f75a9460a24e385a436d13f2e4ee083d0fead9c2943d91716f0e2a2e75a94" },
+  { "name": "Laura",         "display_name": "Laura",         "api_key": "9ef267604f774e77a5a3e9ff39720992926ce211e1c1fa47ac182fb193901c81" }
+]
+  </script>
+
+  <!-- Snapshot inicial REAL (consultado al construir la página). Se pinta al -->
+  <!-- instante para que el ranking no salga vacío aunque el fetch en vivo     -->
+  <!-- esté bloqueado por CORS. La actualización en diferido lo va refrescando.-->
+  <script id="seed-snapshot" type="application/json">
+{"c760ae5e6290def4cf9c7dd153c8352bfa0ff13fc343c09cde892514a4a8246e":{"valid":false,"levels":null,"look":null,"inventory":null},"19df4f592c092cbb9c865d0e7df493bc43c9f6386ed8e51cda191cf6953c8c88":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":210,"state":"played"},{"id":"level-1","name":"Level 1: Helios-3","highscore":1835,"state":"played"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":2510,"state":"played"}],"look":null,"inventory":["spark lighter"]},"1e21fadbaa4bc2a37216800a0486dbb02e992c41ca9f62ec2aef08be68612ca7":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":213,"state":"played"},{"id":"level-1","name":"Level 1: Helios-3","highscore":1838,"state":"in_progress"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":2513,"state":"played"}],"look":{"name":"Maintenance Lobby","description":"The air in this lobby is cool and dry, smelling like electrical sparks and old dust. An open doorway leads north into deeper darkness.\n\nYou see a dusty workbench here. On the dusty workbench, you see an amber chunk and an unlit flare."},"inventory":["spark lighter"]},"4c51b798cfd3b0f7ad6eb5eb29355f4344f89b7b9a114bc625616a1016543629":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":209,"state":"played"},{"id":"level-1","name":"Level 1: Helios-3","highscore":1833,"state":"in_progress"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":2509,"state":"played"}],"look":{"name":"Dark Corridor","description":"It is completely dark. You are likely to be eaten by a grue. You feel a breeze from the south."},"inventory":["spark lighter","petrified sunflower","thermal override flare"]},"0ccd660b3d23c8adef013f645010da0dc4b593b98db2e18cb022f3f51ba78a54":{"valid":false,"levels":null,"look":null,"inventory":null},"4d070f53d281a1bade2154fb8d0a9fd8c0b693acfd3d59bf0da42050eb2fce94":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":207,"state":"played"},{"id":"level-1","name":"Level 1: Helios-3","highscore":1732,"state":"played"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":1504,"state":"played"}],"look":null,"inventory":null},"779f556ed7a65b5cdfde1fcc853f9cfe00a4c1dc9cc219d400cc6fea8f329d21":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":214,"state":"played"},{"id":"level-1","name":"Level 1: Helios-3","highscore":1839,"state":"played"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":2514,"state":"played"}],"look":null,"inventory":null},"d41a2c3cdb4194a56fc4f276850ef2ae1a16fc233174c64018e669f0789881b1":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":null,"state":"in_progress"},{"id":"level-1","name":"Level 1: Helios-3","highscore":null,"state":"locked"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":null,"state":"locked"}],"look":{"name":"Holodeck Entry","description":"You stand on a white wireframe grid. A glowing data portal stands to the north. A small physical cube of raw data sits on the floor.\n\nThe Curator's voice echoes:\n> TYPE 'take cube' TO SECURE THE ASSET.\n\nYou see a physical cube here."},"inventory":[]},"34e7b6924fe653aba44ba038727652d78fb1e76d0278a0ba168a3f9394f8357a":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":212,"state":"in_progress"},{"id":"level-1","name":"Level 1: Helios-3","highscore":1611,"state":"played"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":1512,"state":"played"}],"look":{"name":"Holodeck Entry","description":"You stand on a white wireframe grid. A glowing data portal stands to the north. A tiny corrupted pixel shakes near the floor.\n\nThe Curator's voice echoes:\n> WELCOME OPERATOR. TYPE 'examine pixel' TO ANALYZE IT."},"inventory":[]},"905e6922296b2ce942347a76486826ef4a24b1caa67cd9dac889ad9ca39c651b":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":215,"state":"played"},{"id":"level-1","name":"Level 1: Helios-3","highscore":1840,"state":"in_progress"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":2515,"state":"played"}],"look":{"name":"Manual Override Room","description":"This small room is filled with thick dust. A loose panel sticks out slightly from one of the walls. A passage leads back west.\n\nYou see a hook here."},"inventory":["amber chunk","spark lighter","brass control key"]},"283f75a9460a24e385a436d13f2e4ee083d0fead9c2943d91716f0e2a2e75a94":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":190,"state":"in_progress"},{"id":"level-1","name":"Level 1: Helios-3","highscore":1246,"state":"played"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":null,"state":"available"}],"look":{"name":"Garbage Collection","description":"The memory leak to the south is resolved. The security gateway leads back east. The allocation pool contains the memory allocator.\n\nThe Curator's voice echoes:\n> THE LEAK IS PLUGGED. TYPE 'move south' TO PROCEED TO GRADUATION."},"inventory":["physical cube"]},"9ef267604f774e77a5a3e9ff39720992926ce211e1c1fa47ac182fb193901c81":{"valid":true,"levels":[{"id":"level-0","name":"Level 0: The Digital Twin","highscore":206,"state":"in_progress"},{"id":"level-1","name":"Level 1: Helios-3","highscore":1505,"state":"played"},{"id":"level-2","name":"Level 2: Jade Deep Storage","highscore":null,"state":"available"}],"look":{"name":"Payload Allocation","description":"A small white room. Open archways lead south and west.\n\nThe Curator's voice echoes:\n> ALL ASSETS SECURED. PLEASE TYPE 'move south' TO PROCEED.\n\nYou see a server node here."},"inventory":["physical cube","gold coin","decryption token","memory allocator"]}}
+  </script>
+
+  <style>
+    /* ====== Paleta exacta de adventure.wietsevenema.eu (Google dark) ====== */
+    :root{
+      --surface:#202124; --surface-alt:#3c4043; --surface-border:#5f6368;
+      --text-main:#e8eaed; --text-muted:#9aa0a6;
+      --gray-200:#e8eaed; --gray-300:#dadce0; --gray-400:#bdc1c6; --gray-700:#5f6368;
+      --primary:#4285f4; --primary-dark:#1967d2; --primary-100:#d2e3fc;
+      --secondary:#34a853; --secondary-300:#81c995;
+      --tertiary:#fbbc04; --yellow-300:#fdd663;
+      --danger:#ea4335; --danger-300:#f28b82;
+      --white:#fff; --black:#000;
+      --mono:"Inconsolata", ui-monospace, monospace;
+      --pixel:"Press Start 2P", "Inconsolata", monospace;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{
+      background-color:var(--surface);
+      font-family:var(--mono);
+      font-size:18px; line-height:1.5;
+      color:var(--text-main);
+      padding:16px;
+      position:relative; overflow-x:hidden;
+    }
+    @media(min-width:1024px){ body{padding:32px} }
+    a{color:var(--primary);text-decoration:none}
+
+    .page{max-width:64rem;margin-inline:auto}
+
+    /* ---- componentes pixel iguales al sitio ---- */
+    .pixel-border{
+      border:4px solid var(--gray-200);
+      box-shadow:0 0 0 4px var(--surface), 0 0 0 8px var(--gray-200);
+      image-rendering:pixelated; background:var(--surface);
+    }
+    .pixel-button{
+      cursor:pointer; border:4px solid var(--gray-200);
+      padding:10px 16px; font-family:var(--pixel); font-size:12px; line-height:1.4;
+      background:var(--surface); color:var(--white); text-transform:uppercase;
+      box-shadow:0 0 0 3px var(--surface); margin:3px; transition:all .15s ease;
+      text-decoration:none; display:inline-block;
+    }
+    .pixel-button:hover{ translate:-2px -2px; box-shadow:3px 3px 0 3px var(--surface); }
+    .pixel-button:active{ translate:0 0; }
+    .pixel-button.primary{ border-color:var(--primary); color:var(--primary-100); }
+    .pixel-button.primary:hover{ background:var(--primary); color:#fff; }
+    .pixel-button.green{ border-color:var(--secondary); color:var(--secondary-300); }
+    .pixel-button.green:hover{ background:var(--secondary); color:#fff; }
+    .pixel-button.danger{ border-color:var(--danger); color:var(--danger-300); }
+    .pixel-button.danger:hover{ background:var(--danger); color:#fff; }
+    .pixel-button.sm{ padding:6px 10px; font-size:10px; border-width:3px; }
+
+    /* ---- nav decorativa estilo sitio ---- */
+    nav.topnav{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
+    .pixel-nav-item{
+      border:2px solid var(--white); background:var(--surface); color:var(--white);
+      padding:12px 8px; text-align:center; font-family:var(--pixel); font-size:12px;
+      text-transform:uppercase; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      transition:all .2s ease;
+    }
+    .pixel-nav-item:hover,.pixel-nav-item.active{ background:var(--white); color:var(--surface); }
+    @media(max-width:640px){ nav.topnav{grid-template-columns:repeat(2,1fr)} .pixel-nav-item{font-size:10px} }
+
+    h1.title{ font-family:var(--pixel); font-size:22px; line-height:1.4; margin:0 0 6px;
+      color:var(--gray-200); }
+    @media(max-width:640px){ h1.title{font-size:15px} }
+    .subtitle{ color:var(--text-muted); font-size:16px; margin:0 0 18px; }
+    h2.section{ font-family:var(--pixel); font-size:15px; color:var(--gray-200); margin:0 0 14px; }
+
+    /* ---- barra de control ---- */
+    .controlbar{ display:flex; flex-wrap:wrap; align-items:center; gap:12px;
+      padding:14px 16px; margin-bottom:10px; }
+    .control-actions{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:4px; margin-bottom:24px; }
+    .status-chips{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; flex:1 1 auto; font-size:15px; }
+    .chip{ display:inline-flex; align-items:center; gap:8px; color:var(--text-muted); }
+    .chip b{ color:var(--text-main); font-weight:700; }
+    .dot{ width:11px;height:11px;border-radius:50%;display:inline-block;box-shadow:0 0 6px currentColor; }
+    .dot.live{ background:var(--secondary); color:var(--secondary); }
+    .dot.paused{ background:var(--tertiary); color:var(--tertiary); }
+    .dot.snap{ background:var(--primary); color:var(--primary); }
+
+    .banner{ display:none; padding:14px 18px; margin:40px 8px 20px; font-size:15px;
+      border:4px solid var(--tertiary); box-shadow:0 0 0 4px var(--surface),0 0 0 8px var(--tertiary);
+      background:#2b2410; color:var(--yellow-300); overflow-wrap:anywhere; }
+    .banner code{ display:inline-block; max-width:100%; margin-top:6px; background:#000; padding:4px 8px;
+      color:var(--gray-200); font-size:12px; overflow-wrap:anywhere; word-break:break-all; }
+
+    /* ---- tarjetas de ranking ---- */
+    .board{ display:flex; flex-direction:column; gap:8px; }
+    .row{
+      display:grid; grid-template-columns:46px 1fr auto; gap:12px; align-items:center;
+      border:3px solid var(--surface-border); background:var(--surface-alt);
+      padding:8px 12px; cursor:pointer; transition:border-color .2s, background .2s;
+    }
+    .row:hover{ border-color:var(--gray-400); }
+    .row.rank-1{ border-color:var(--tertiary); }
+    .row.rank-2{ border-color:var(--gray-300); }
+    .row.rank-3{ border-color:#cd7f32; }
+    .row.active-play{ box-shadow:inset 4px 0 0 var(--primary); }
+    .row.flash{ animation:flash 1.1s ease; }
+    @keyframes flash{ 0%{background:#13351f;border-color:var(--secondary)} 100%{} }
+    .row.err{ opacity:.75; }
+
+    .rank{ font-family:var(--pixel); font-size:18px; text-align:center; color:var(--text-muted); }
+    .rank-1 .rank{ color:var(--tertiary); } .rank-2 .rank{ color:var(--gray-300); } .rank-3 .rank{ color:#e0975a; }
+    .rank .medal{ font-size:20px; }
+
+    .who .name{ font-size:17px; font-weight:700; color:var(--text-main); display:flex;align-items:center;gap:8px;flex-wrap:wrap; line-height:1.25; }
+    .who .meta{ font-size:13px; color:var(--text-muted); margin-top:2px; display:flex;flex-wrap:wrap;gap:3px 12px;align-items:center; line-height:1.35; }
+    .token{ font-family:var(--mono); font-size:11px; color:var(--text-muted); word-break:break-all;
+      line-height:1.2; margin-top:2px; cursor:copy; user-select:all; display:block; }
+    .token:hover{ color:var(--primary-100); }
+    .token .kf{ color:var(--surface-border); margin-right:4px; }
+    .levels{ display:flex; gap:6px; margin-top:4px; flex-wrap:wrap; }
+    .lv{ font-size:12px; padding:1px 6px; border:1px solid var(--surface-border); color:var(--gray-300); white-space:nowrap; line-height:1.4; }
+    .lv b{ color:#fff; }
+    .lv.inprog{ border-color:var(--primary); color:var(--primary-100); }
+    .lv.played{ border-color:var(--secondary); }
+    .lv.locked{ opacity:.45; }
+
+    .badge{ font-family:var(--pixel); font-size:9px; padding:4px 6px; text-transform:uppercase; }
+    .badge.play{ background:var(--primary); color:#fff; }
+    .badge.idle{ border:1px solid var(--surface-border); color:var(--text-muted); }
+    .badge.staff{ border:1px solid var(--tertiary); color:var(--tertiary); }
+    .badge.bad{ border:1px solid var(--danger); color:var(--danger-300); }
+
+    .score{ text-align:right; }
+    .score .pts{ font-family:var(--pixel); font-size:18px; color:var(--secondary-300); }
+    .score .lbl{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; }
+    @media(max-width:640px){
+      .row{ grid-template-columns:46px 1fr; }
+      .score{ grid-column:1 / -1; text-align:left; display:flex; gap:10px; align-items:baseline; }
+      .rank{ font-size:18px; }
+    }
+
+    .detail{ display:none; grid-column:1 / -1; margin-top:12px; padding-top:12px;
+      border-top:1px dashed var(--surface-border); font-size:15px; color:var(--gray-300); }
+    .row.open .detail{ display:block; }
+    .detail .room-desc{ white-space:pre-wrap; color:var(--text-muted); font-size:14px; margin:6px 0; }
+    .detail .inv{ color:var(--secondary-300); }
+    .detail .room-name{ color:var(--primary-100); font-weight:700; }
+
+    .excluded-head{ margin:26px 0 12px; font-family:var(--pixel); font-size:11px; color:var(--text-muted); text-transform:uppercase; }
+
+    /* ---- diálogo de gestión ---- */
+    dialog{ border:none; background:transparent; padding:0; color:var(--text-main); max-width:100%; }
+    dialog::backdrop{ background:rgba(0,0,0,.72); }
+    .modal{ width:min(760px,94vw); max-height:88vh; overflow:auto; padding:22px; background:var(--surface); }
+    .modal h2{ font-family:var(--pixel); font-size:16px; margin:0 0 16px; color:var(--gray-200); }
+    .field{ margin-bottom:16px; }
+    .field label{ display:block; font-size:14px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; }
+    .field .hint{ font-size:13px; color:var(--text-muted); text-transform:none; letter-spacing:0; margin-top:4px; }
+    input[type=text],input[type=number],input[type=url]{
+      width:100%; background:#000; border:3px solid var(--surface-border); color:var(--text-main);
+      font-family:var(--mono); font-size:17px; padding:8px 10px;
+    }
+    input:focus{ outline:none; border-color:var(--primary); }
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:560px){ .grid2{grid-template-columns:1fr} }
+
+    table.players{ width:100%; border-collapse:collapse; font-size:15px; margin-top:6px; }
+    table.players th{ text-align:left; font-size:12px; text-transform:uppercase; color:var(--text-muted);
+      border-bottom:2px solid var(--surface-border); padding:6px 6px; letter-spacing:.05em; }
+    table.players td{ padding:6px 6px; border-bottom:1px solid var(--surface-border); vertical-align:middle; }
+    table.players input[type=text]{ font-size:14px; padding:5px 7px; border-width:2px; }
+    table.players .keycell input{ font-family:var(--mono); }
+    .mini{ font-size:11px; padding:4px 8px; border-width:2px; margin:0; }
+    .checkcell{ text-align:center; }
+    .modal-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; justify-content:flex-end; align-items:center; }
+    .modal-actions .left{ margin-right:auto; }
+    .toast{ font-size:14px; color:var(--secondary-300); }
+    footer{ margin-top:30px; color:var(--text-muted); font-size:13px; text-align:center; }
+    .row-add td{ background:#0c1a0f; }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <h1 class="title">Operator Leaderboard</h1>
+    <p class="subtitle">Reclamation HQ · ranking en vivo de operadores — actualización en diferido</p>
+
+    <!-- Recuadro de info -->
+    <div class="controlbar pixel-border">
+      <div class="status-chips">
+        <span class="chip"><span id="mode-dot" class="dot snap"></span><b id="mode-text">Snapshot</b></span>
+        <span class="chip">Próximo refresco en <b id="countdown">—</b>s</span>
+        <span class="chip">Siguiente: <b id="next-player">—</b></span>
+        <span class="chip">Actualizado: <b id="last-update">—</b></span>
+        <span class="chip">Intervalo: <b id="interval-label">—</b>s</span>
+      </div>
+    </div>
+
+    <!-- Acciones (debajo del recuadro, alineadas a la derecha) -->
+    <div class="control-actions">
+      <button id="btn-refresh" class="pixel-button green sm">Refrescar ya</button>
+      <button id="btn-pause" class="pixel-button sm">Pausar</button>
+      <button id="btn-manage" class="pixel-button primary sm">⚙ Gestionar</button>
+    </div>
+
+    <h2 class="section">▸ Ranking</h2>
+    <div id="board" class="board"></div>
+
+    <div id="excluded-wrap" style="display:none">
+      <div class="excluded-head">Fuera de ranking (staff / pruebas)</div>
+      <div id="board-excluded" class="board"></div>
+    </div>
+
+    <div id="cors-banner" class="banner"></div>
+
+    <footer>
+      Datos: <a href="https://adventure.wietsevenema.eu/game-api" target="_blank">Game API</a> ·
+      puntuación = suma de highscores de los niveles · todo se guarda en tu navegador (localStorage).
+    </footer>
+  </div>
+
+  <!-- ====================== DIÁLOGO DE GESTIÓN ====================== -->
+  <dialog id="dlg">
+    <div class="modal pixel-border">
+      <h2>⚙ Gestión de jugadores</h2>
+
+      <div class="grid2">
+        <div class="field">
+          <label for="cfg-interval">Intervalo de actualización (segundos)</label>
+          <input type="number" id="cfg-interval" min="2" max="3600" step="1" />
+          <div class="hint">Cada intervalo se refresca <b>un</b> jugador (rotación), en segundo plano.</div>
+        </div>
+        <div class="field">
+          <label for="cfg-base">Base URL de la API (o proxy)</label>
+          <input type="url" id="cfg-base" />
+          <div class="hint">Por defecto, el proxy CORS (Cloudflare Worker) que permite el refresco en vivo. Puedes poner la API directa u otro proxy.</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Jugadores (usuarios + API keys)</label>
+        <table class="players">
+          <thead>
+            <tr><th style="width:26%">Nombre</th><th>API key</th><th style="width:64px" class="checkcell" title="Excluir del ranking">Staff</th><th style="width:50px"></th></tr>
+          </thead>
+          <tbody id="players-tbody"></tbody>
+          <tfoot>
+            <tr class="row-add">
+              <td><input type="text" id="add-name" placeholder="Nombre" /></td>
+              <td><input type="text" id="add-key" placeholder="API key (hex)" /></td>
+              <td class="checkcell"><input type="checkbox" id="add-staff" title="Excluir del ranking" /></td>
+              <td><button id="btn-add" class="pixel-button green mini">+ Añadir</button></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-reset" class="pixel-button danger sm left" title="Volver al roster embebido en la página">Restaurar de fábrica</button>
+        <span id="dlg-toast" class="toast"></span>
+        <button id="btn-export" class="pixel-button sm">Exportar JSON</button>
+        <button id="btn-cancel" class="pixel-button sm">Cerrar</button>
+        <button id="btn-save" class="pixel-button green sm">Guardar y aplicar</button>
+      </div>
+    </div>
+  </dialog>
+
+<script>
+"use strict";
+/* =====================================================================
+   Operator Leaderboard — vanilla JS, una sola página, sin dependencias.
+   - Roster inicial embebido en <script id="seed-roster"> (zona superior).
+   - Snapshot real embebido para pintar al instante.
+   - Actualización EN DIFERIDO: cada X s se refresca 1 jugador (rotación),
+     en segundo plano, sin recargar la página.
+   - Persistencia completa en localStorage.
+   ===================================================================== */
+
+const LS = { cfg:"ovl.cfg.v1", roster:"ovl.roster.v1", state:"ovl.state.v1" };
+const LEVEL_IDS = ["level-0","level-1","level-2"];
+const LEVEL_SHORT = { "level-0":"L0", "level-1":"L1", "level-2":"L2" };
+
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const norm = k => (k||"").trim().toLowerCase();
+const esc = s => String(s??"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- carga inicial (seed embebido) ---------- */
+const SEED_ROSTER   = JSON.parse($("#seed-roster").textContent);
+const SEED_SNAPSHOT = JSON.parse($("#seed-snapshot").textContent);
+
+/* ---------- estado en memoria ---------- */
+let cfg, roster, store, rotIdx = 0, countdown = 0, paused = false, corsSeen = false;
+let everLive = false;
+const openKeys = new Set();   // filas desplegadas (se conservan entre re-renders)
+
+/* ---------- persistencia ---------- */
+function loadCfg(){
+  const WORKER = "https://adventure-cors.adventure-unica.workers.dev";
+  const def = { interval:12, base:WORKER, paused:false };
+  try { cfg = Object.assign(def, JSON.parse(localStorage.getItem(LS.cfg)||"{}")); }
+  catch { cfg = def; }
+  // La API directa no admite CORS: si quedó guardada, migramos al proxy.
+  if (cfg.base === "https://adventure.wietsevenema.eu") cfg.base = WORKER;
+  paused = !!cfg.paused;
+}
+function saveCfg(){ cfg.paused = paused; localStorage.setItem(LS.cfg, JSON.stringify(cfg)); }
+
+function rosterFromSeed(){
+  return SEED_ROSTER.map(p => ({
+    name: p.display_name || p.name,
+    api_key: norm(p.api_key),
+    exclude_ranking: !!p.exclude_ranking
+  }));
+}
+function loadRoster(){
+  try {
+    const r = JSON.parse(localStorage.getItem(LS.roster));
+    roster = (Array.isArray(r) && r.length) ? r.map(p=>({name:p.name,api_key:norm(p.api_key),exclude_ranking:!!p.exclude_ranking})) : rosterFromSeed();
+  } catch { roster = rosterFromSeed(); }
+}
+function saveRoster(){ localStorage.setItem(LS.roster, JSON.stringify(roster)); }
+
+function loadStore(){
+  try { store = JSON.parse(localStorage.getItem(LS.state)) || {}; }
+  catch { store = {}; }
+  // sembrar con snapshot real lo que no tengamos aún
+  for (const [key,snap] of Object.entries(SEED_SNAPSHOT)){
+    if (!store[key]){
+      store[key] = {
+        valid: snap.valid, levels: snap.levels, look: snap.look,
+        inventory: snap.inventory, status: snap.valid ? "snapshot" : "bad",
+        ts: null, error: snap.valid ? null : "API key no válida"
+      };
+    }
+  }
+}
+function saveStore(){ localStorage.setItem(LS.state, JSON.stringify(store)); }
+
+/* ---------- helpers de datos ---------- */
+function totalScore(key){
+  const lv = store[key]?.levels;
+  if (!Array.isArray(lv)) return 0;
+  return lv.reduce((a,l)=> a + (Number(l.highscore)||0), 0);
+}
+function activeLevel(key){
+  const lv = store[key]?.levels;
+  if (!Array.isArray(lv)) return null;
+  return lv.find(l => l.state === "in_progress") || null;
+}
+function levelByState(key){
+  const lv = store[key]?.levels;
+  const map = {};
+  if (Array.isArray(lv)) lv.forEach(l => map[l.id]=l);
+  return map;
+}
+function roomName(key){
+  const look = store[key]?.look;
+  if (look && typeof look === "object" && look.name) return look.name;
+  return null;
+}
+function relTime(ts){
+  if (!ts) return "snapshot";
+  const s = Math.floor((Date.now()-ts)/1000);
+  if (s < 5) return "ahora";
+  if (s < 60) return `hace ${s}s`;
+  const m = Math.floor(s/60);
+  if (m < 60) return `hace ${m}m`;
+  return `hace ${Math.floor(m/60)}h`;
+}
+
+/* ---------- API (en diferido / background) ---------- */
+async function apiGet(path, key){
+  const url = cfg.base.replace(/\/+$/,"") + path;
+  const res = await fetch(url, { headers: { "Authorization": "ApiKey " + key }, cache:"no-store" });
+  let body = null;
+  try { body = await res.json(); } catch { body = null; }
+  return { ok: res.ok, status: res.status, body };
+}
+
+async function refreshPlayer(key){
+  key = norm(key);
+  const prev = store[key] || {};
+  store[key] = Object.assign({}, prev, { status:"loading" });
+  renderRowState(key);
+  try {
+    const [lv, look, inv] = await Promise.all([
+      apiGet("/game/levels", key),
+      apiGet("/game/look", key),
+      apiGet("/game/inventory", key),
+    ]);
+    everLive = true;
+    const valid = Array.isArray(lv.body);
+    const next = {
+      valid,
+      levels: valid ? lv.body : (prev.levels ?? null),
+      look:   (look.body && look.body.name) ? look.body : (look.body && look.body.detail ? null : (prev.look ?? null)),
+      inventory: Array.isArray(inv.body?.inventory) ? inv.body.inventory : (inv.body && inv.body.detail ? null : (prev.inventory ?? null)),
+      ts: Date.now(),
+      status: valid ? "ok" : "bad",
+      error: valid ? null : (lv.body?.detail || `HTTP ${lv.status}`)
+    };
+    store[key] = next;
+  } catch (e) {
+    // Probable bloqueo CORS / red: conservamos último dato bueno.
+    store[key] = Object.assign({}, prev, { status: prev.valid===false ? "bad":"neterr", error: String(e.message||e), ts: prev.ts });
+    maybeShowCorsBanner();
+  }
+  saveStore();
+  renderRowState(key, true);
+  updateModeChip();
+  $("#last-update").textContent = new Date().toLocaleTimeString();
+}
+
+async function refreshAll(){
+  // En segundo plano, escalonado para no martillear la API.
+  for (let i=0;i<roster.length;i++){
+    refreshPlayer(roster[i].api_key);
+    await new Promise(r=>setTimeout(r, 250));
+  }
+}
+
+function maybeShowCorsBanner(){
+  if (corsSeen || everLive) return;
+  corsSeen = true;
+  const b = $("#cors-banner");
+  b.innerHTML = "⚠ El navegador bloquea las llamadas en vivo a la API (CORS). Se muestran los datos del snapshot embebido. "+
+    "Para actualizar en vivo, abre esta página con CORS desactivado, por ejemplo:<br>"+
+    "<code>open -na \"Google Chrome\" --args --disable-web-security --user-data-dir=/tmp/advcors --allow-file-access-from-files \"" +
+    location.href + "\"</code> &nbsp;—&nbsp; o configura un proxy en ⚙ Gestionar.";
+  b.style.display = "block";
+}
+
+/* ---------- render ---------- */
+function rankedAndExcluded(){
+  const ranked = roster.filter(p=>!p.exclude_ranking)
+    .map(p=>({p, total:totalScore(p.api_key)}))
+    .sort((a,b)=> b.total - a.total || a.p.name.localeCompare(b.p.name));
+  const excluded = roster.filter(p=>p.exclude_ranking)
+    .map(p=>({p, total:totalScore(p.api_key)}))
+    .sort((a,b)=> b.total - a.total || a.p.name.localeCompare(b.p.name));
+  return { ranked, excluded };
+}
+
+function rowHTML(p, rank){
+  const key = p.api_key;
+  const st  = store[key] || {};
+  const total = totalScore(key);
+  const act = activeLevel(key);
+  const lvMap = levelByState(key);
+  const room = roomName(key);
+  const inv = Array.isArray(st.inventory) ? st.inventory : null;
+
+  const medal = rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":null;
+  const rankCls = rank? `rank-${rank}`:"";
+  const playCls = act ? "active-play":"";
+  const errCls = (st.status==="bad") ? "err":"";
+
+  // chips de nivel
+  const lvls = LEVEL_IDS.map(id=>{
+    const l = lvMap[id];
+    if (!l) return `<span class="lv locked">${LEVEL_SHORT[id]} —</span>`;
+    const cls = l.state==="in_progress"?"inprog":l.state==="played"?"played":l.state==="locked"?"locked":"";
+    const sc = (l.highscore==null) ? "·" : l.highscore;
+    return `<span class="lv ${cls}">${LEVEL_SHORT[id]} <b>${sc}</b></span>`;
+  }).join("");
+
+  // badges de estado
+  let statusBadge;
+  if (st.status==="bad") statusBadge = `<span class="badge bad">API KEY KO</span>`;
+  else if (act) statusBadge = `<span class="badge play">▸ ${esc(act.name.replace(/:.*/,''))} · jugando</span>`;
+  else statusBadge = `<span class="badge idle">Sin partida activa</span>`;
+
+  const dotCls = st.status==="ok"?"live": st.status==="bad"?"paused":"snap";
+
+  // detalle expandible
+  const lookDesc = (st.look && st.look.description) ? st.look.description : "";
+  const detail = `
+    <div class="detail">
+      ${room ? `<div><span class="room-name">📍 ${esc(room)}</span></div>`:""}
+      ${lookDesc ? `<div class="room-desc">${esc(lookDesc)}</div>`:""}
+      ${act ? `<div>Nivel en curso: <b>${esc(act.name)}</b></div>`:""}
+      ${inv ? `<div class="inv">🎒 Inventario (${inv.length}): ${inv.length? esc(inv.join(", ")) : "vacío"}</div>`:""}
+      ${(st.error && st.status==="bad") ? `<div style="color:var(--danger-300)">⚠ ${esc(st.error)}</div>`:""}
+      <div style="color:var(--text-muted);font-size:13px;margin-top:6px">key …${esc(key.slice(-8))}</div>
+    </div>`;
+
+  return `
+  <div class="row ${rankCls} ${playCls} ${errCls} ${openKeys.has(key)?'open':''}" data-key="${esc(key)}">
+    <div class="rank">${medal?`<span class="medal">${medal}</span>`:(rank?`#${rank}`:"—")}</div>
+    <div class="who">
+      <div class="name">${esc(p.name)} ${p.exclude_ranking?`<span class="badge staff">staff</span>`:""}</div>
+      <div class="token" data-copy="${esc(key)}" title="Click para copiar la API key"><span class="kf">🔑</span>${esc(key)}</div>
+      <div class="levels">${lvls}</div>
+    </div>
+    <div class="score">
+      <div class="pts">${total.toLocaleString("es-ES")}</div>
+      <div class="lbl">puntos</div>
+    </div>
+    ${detail}
+  </div>`;
+}
+
+function render(){
+  const { ranked, excluded } = rankedAndExcluded();
+  $("#board").innerHTML = ranked.map((e,i)=> rowHTML(e.p, i+1)).join("") || `<div class="row"><div></div><div class="who"><div class="name">Sin jugadores</div></div><div></div></div>`;
+  if (excluded.length){
+    $("#excluded-wrap").style.display = "block";
+    $("#board-excluded").innerHTML = excluded.map(e=> rowHTML(e.p, null)).join("");
+  } else {
+    $("#excluded-wrap").style.display = "none";
+  }
+  wireRowToggles();
+  updateModeChip();
+  $("#interval-label").textContent = cfg.interval;
+}
+
+// re-render incremental de una fila concreta (para el refresco en diferido)
+function renderRowState(key, flash=false){
+  // como el orden puede cambiar al actualizar puntos, re-render completo y marcamos flash
+  render();
+  if (flash){
+    const el = $(`.row[data-key="${CSS.escape(norm(key))}"]`);
+    if (el){ el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"), 1100); }
+  }
+}
+
+function wireRowToggles(){
+  $$(".row[data-key]").forEach(row=>{
+    row.onclick = ()=>{
+      const k = row.getAttribute("data-key");
+      if (openKeys.has(k)){ openKeys.delete(k); row.classList.remove("open"); }
+      else { openKeys.add(k); row.classList.add("open"); }
+    };
+  });
+  $$(".token[data-copy]").forEach(t=>{
+    t.onclick = (e)=>{
+      e.stopPropagation();            // no desplegar la fila
+      const v = t.getAttribute("data-copy");
+      navigator.clipboard?.writeText(v).then(()=>{
+        const old = t.querySelector(".kf");
+        if (old){ old.textContent = "✓"; setTimeout(()=>old.textContent="🔑", 900); }
+      }).catch(()=>{});
+    };
+  });
+}
+
+function updateModeChip(){
+  const dot = $("#mode-dot"), txt = $("#mode-text");
+  if (paused){ dot.className="dot paused"; txt.textContent="En pausa"; }
+  else if (everLive){ dot.className="dot live"; txt.textContent="En vivo"; }
+  else { dot.className="dot snap"; txt.textContent="Snapshot"; }
+}
+
+/* ---------- bucle de actualización en diferido ---------- */
+function nextPlayerName(){ return roster.length ? roster[rotIdx % roster.length].name : "—"; }
+
+function tick(){
+  $("#next-player").textContent = nextPlayerName();
+  if (paused || !roster.length){ $("#countdown").textContent = "—"; return; }
+  countdown--;
+  if (countdown <= 0){
+    const p = roster[rotIdx % roster.length];
+    rotIdx = (rotIdx + 1) % roster.length;
+    countdown = cfg.interval;
+    if (p) refreshPlayer(p.api_key);   // un jugador por intervalo, en background
+  }
+  $("#countdown").textContent = Math.max(0, countdown);
+  $("#next-player").textContent = nextPlayerName();
+}
+
+/* ---------- controles ---------- */
+function setPaused(v){
+  paused = v; saveCfg();
+  $("#btn-pause").textContent = paused ? "Reanudar" : "Pausar";
+  updateModeChip();
+}
+
+/* ---------- diálogo de gestión ---------- */
+function openDialog(){
+  $("#cfg-interval").value = cfg.interval;
+  $("#cfg-base").value = cfg.base;
+  renderPlayersTable();
+  $("#dlg-toast").textContent = "";
+  $("#dlg").showModal();
+}
+function renderPlayersTable(){
+  $("#players-tbody").innerHTML = roster.map((p,i)=>`
+    <tr data-i="${i}">
+      <td><input type="text" class="p-name" value="${esc(p.name)}" /></td>
+      <td class="keycell"><input type="text" class="p-key" value="${esc(p.api_key)}" /></td>
+      <td class="checkcell"><input type="checkbox" class="p-staff" ${p.exclude_ranking?"checked":""} title="Excluir del ranking" /></td>
+      <td><button class="pixel-button danger mini p-del">✕</button></td>
+    </tr>`).join("");
+  $$("#players-tbody .p-del").forEach(btn=>{
+    btn.onclick = (ev)=>{ ev.preventDefault(); btn.closest("tr").remove(); };
+  });
+}
+function collectTableIntoRoster(){
+  const rows = $$("#players-tbody tr");
+  const next = [];
+  for (const tr of rows){
+    const name = $(".p-name",tr).value.trim();
+    const key  = norm($(".p-key",tr).value);
+    const staff= $(".p-staff",tr).checked;
+    if (!name && !key) continue;
+    next.push({ name: name || "(sin nombre)", api_key: key, exclude_ranking: staff });
+  }
+  return next;
+}
+function addPlayerRow(){
+  const name = $("#add-name").value.trim();
+  const key  = norm($("#add-key").value);
+  if (!key){ $("#dlg-toast").textContent="Falta la API key"; return; }
+  // añadimos a la tabla en memoria visual
+  const tb = $("#players-tbody");
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><input type="text" class="p-name" value="${esc(name||"")}" /></td>
+    <td class="keycell"><input type="text" class="p-key" value="${esc(key)}" /></td>
+    <td class="checkcell"><input type="checkbox" class="p-staff" ${$("#add-staff").checked?"checked":""} /></td>
+    <td><button class="pixel-button danger mini p-del">✕</button></td>`;
+  tb.appendChild(tr);
+  $(".p-del",tr).onclick=(ev)=>{ev.preventDefault();tr.remove();};
+  $("#add-name").value=""; $("#add-key").value=""; $("#add-staff").checked=false;
+  $("#dlg-toast").textContent="Añadido (recuerda Guardar)";
+}
+function saveDialog(){
+  const iv = Math.max(2, Math.min(3600, parseInt($("#cfg-interval").value,10)||12));
+  cfg.interval = iv;
+  cfg.base = ($("#cfg-base").value.trim() || "https://adventure-cors.adventure-unica.workers.dev");
+  saveCfg();
+  roster = collectTableIntoRoster();
+  saveRoster();
+  // sembrar estado para llaves nuevas desde snapshot si existe
+  roster.forEach(p=>{
+    if (!store[p.api_key] && SEED_SNAPSHOT[p.api_key]){
+      const s = SEED_SNAPSHOT[p.api_key];
+      store[p.api_key] = { valid:s.valid, levels:s.levels, look:s.look, inventory:s.inventory, status:s.valid?"snapshot":"bad", ts:null, error:s.valid?null:"API key no válida" };
+    }
+  });
+  saveStore();
+  if (rotIdx >= roster.length) rotIdx = 0;
+  countdown = Math.min(countdown, cfg.interval);
+  render();
+  $("#dlg-toast").textContent = "Guardado ✓";
+  setTimeout(()=>$("#dlg").close(), 350);
+}
+function resetFactory(){
+  if (!confirm("¿Restaurar el roster embebido de fábrica y borrar tus cambios guardados?")) return;
+  localStorage.removeItem(LS.roster);
+  localStorage.removeItem(LS.state);
+  roster = rosterFromSeed();
+  store = {};
+  loadStore(); // re-siembra snapshot
+  saveRoster(); saveStore();
+  renderPlayersTable();
+  render();
+  $("#dlg-toast").textContent="Restaurado de fábrica ✓";
+}
+function exportJSON(){
+  const data = roster.map(p=>({ name:p.name, display_name:p.name, api_key:p.api_key, ...(p.exclude_ranking?{exclude_ranking:true}:{}) }));
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "ranking.json"; a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ---------- arranque ---------- */
+function init(){
+  loadCfg(); loadRoster(); loadStore();
+  render();
+  $("#interval-label").textContent = cfg.interval;
+  $("#btn-pause").textContent = paused ? "Reanudar" : "Pausar";
+  $("#last-update").textContent = "—";
+  countdown = cfg.interval;
+
+  $("#btn-refresh").onclick = ()=> refreshAll();
+  $("#btn-pause").onclick   = ()=> setPaused(!paused);
+  $("#btn-manage").onclick  = openDialog;
+  $("#btn-add").onclick     = (e)=>{ e.preventDefault(); addPlayerRow(); };
+  $("#btn-save").onclick     = (e)=>{ e.preventDefault(); saveDialog(); };
+  $("#btn-cancel").onclick   = (e)=>{ e.preventDefault(); $("#dlg").close(); };
+  $("#btn-reset").onclick     = (e)=>{ e.preventDefault(); resetFactory(); };
+  $("#btn-export").onclick   = (e)=>{ e.preventDefault(); exportJSON(); };
+  $("#dlg").addEventListener("click", (e)=>{ if (e.target === $("#dlg")) $("#dlg").close(); });
+
+  // reloj + bucle en diferido (1s)
+  setInterval(()=>{ render(); }, 15000);      // refresco visual de "hace Xs"
+  setInterval(tick, 1000);                     // rotación de actualización
+  $("#next-player").textContent = nextPlayerName();
+
+  // primer disparo en diferido (no bloquea la carga)
+  setTimeout(()=> tick(), 800);
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
