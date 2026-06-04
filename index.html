@@ -134,6 +134,14 @@
       padding:8px 12px; cursor:pointer; transition:border-color .2s, background .2s;
     }
     .row:hover{ border-color:var(--gray-400); }
+    .rankhead{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    .rank-tabs{ display:flex; gap:6px; flex-wrap:wrap; }
+    .rank-tab{ cursor:pointer; font-family:var(--pixel); font-size:11px; line-height:1.4; text-transform:uppercase;
+      background:var(--surface); color:var(--text-muted); border:3px solid var(--surface-border);
+      padding:7px 12px; transition:all .15s ease; }
+    .rank-tab:hover{ border-color:var(--gray-400); color:var(--text-main); }
+    .rank-tab.active{ border-color:var(--secondary); color:var(--white); background:#13351f; }
+
     .row.rank-1{ border-color:var(--primary); }
     .row.rank-2{ border-color:var(--tertiary); }
     .row.rank-3{ border-color:var(--secondary); }
@@ -238,7 +246,15 @@
       </div>
     </div>
 
-    <h2 class="section">▸ Ranking</h2>
+    <div class="rankhead">
+      <h2 class="section">▸ Ranking</h2>
+      <div class="rank-tabs" id="rank-tabs">
+        <button class="rank-tab active" data-mode="general">General</button>
+        <button class="rank-tab" data-mode="level-0">L0</button>
+        <button class="rank-tab" data-mode="level-1">L1</button>
+        <button class="rank-tab" data-mode="level-2">L2</button>
+      </div>
+    </div>
     <div id="board" class="board"></div>
 
     <div id="excluded-wrap" style="display:none">
@@ -280,6 +296,7 @@ const SEED_SNAPSHOT = JSON.parse($("#seed-snapshot").textContent);
 
 /* ---------- estado en memoria ---------- */
 let cfg, roster, store, rotIdx = 0, countdown = 0, paused = false, corsSeen = false;
+let sortMode = "general";   // general | level-0 | level-1 | level-2
 let everLive = false;
 const openKeys = new Set();   // filas con la API key visible (se conservan entre re-renders)
 
@@ -321,6 +338,16 @@ function totalScore(key){
   const lv = store[key]?.levels;
   if (!Array.isArray(lv)) return 0;
   return lv.reduce((a,l)=> a + (Number(l.highscore)||0), 0);
+}
+function levelScore(key, levelId){
+  const lv = store[key]?.levels;
+  if (!Array.isArray(lv)) return 0;
+  const l = lv.find(x=>x.id===levelId);
+  return Number(l?.highscore)||0;
+}
+// puntuación según la categoría seleccionada (General / L0 / L1 / L2)
+function scoreFor(key){
+  return sortMode==="general" ? totalScore(key) : levelScore(key, sortMode);
 }
 function activeLevel(key){
   const lv = store[key]?.levels;
@@ -414,10 +441,10 @@ function maybeShowCorsBanner(){
 /* ---------- render ---------- */
 function rankedAndExcluded(){
   const ranked = roster.filter(p=>!p.exclude_ranking)
-    .map(p=>({p, total:totalScore(p.api_key)}))
+    .map(p=>({p, total:scoreFor(p.api_key)}))
     .sort((a,b)=> b.total - a.total || a.p.name.localeCompare(b.p.name));
   const excluded = roster.filter(p=>p.exclude_ranking)
-    .map(p=>({p, total:totalScore(p.api_key)}))
+    .map(p=>({p, total:scoreFor(p.api_key)}))
     .sort((a,b)=> b.total - a.total || a.p.name.localeCompare(b.p.name));
   return { ranked, excluded };
 }
@@ -425,7 +452,7 @@ function rankedAndExcluded(){
 function rowHTML(p, rank){
   const key = p.api_key;
   const st  = store[key] || {};
-  const total = totalScore(key);
+  const total = scoreFor(key);
   const act = activeLevel(key);
   const lvMap = levelByState(key);
   const room = roomName(key);
@@ -463,7 +490,7 @@ function rowHTML(p, rank){
     </div>
     <div class="score">
       <div class="pts">${total.toLocaleString("es-ES")}</div>
-      <div class="lbl">puntos</div>
+      <div class="lbl">${sortMode==="general"?"puntos":LEVEL_SHORT[sortMode]+" pts"}</div>
     </div>
   </div>`;
 }
@@ -537,6 +564,13 @@ function init(){
 
   // Sin botones: tocar el recuadro de info refresca a todos ya.
   $("#infobox").onclick = ()=> refreshAll();
+
+  // Botones de categoría: ordenan el ranking por General / L0 / L1 / L2.
+  $$("#rank-tabs .rank-tab").forEach(b=> b.onclick = ()=>{
+    sortMode = b.dataset.mode;
+    $$("#rank-tabs .rank-tab").forEach(x=> x.classList.toggle("active", x===b));
+    render();
+  });
 
   // reloj + bucle en diferido (1s)
   setInterval(()=>{ render(); }, 15000);      // refresco visual de "hace Xs"
