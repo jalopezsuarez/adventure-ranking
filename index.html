@@ -131,7 +131,7 @@
     .row{
       display:grid; grid-template-columns:46px 1fr auto; gap:12px; align-items:center;
       border:3px solid var(--surface-border); background:var(--surface-alt);
-      padding:8px 12px; transition:border-color .2s, background .2s;
+      padding:8px 12px; cursor:pointer; transition:border-color .2s, background .2s;
     }
     .row:hover{ border-color:var(--gray-400); }
     .row.rank-1{ border-color:var(--tertiary); }
@@ -153,6 +153,8 @@
     .token:hover{ color:var(--primary-100); }
     .token .kf{ color:var(--surface-border); margin-right:4px; }
     .row-updated{ font-size:12px; color:var(--text-muted); margin-top:5px; }
+    .row-key{ display:none; font-family:var(--mono); color:var(--primary-100); word-break:break-all; user-select:all; }
+    .row.open .row-key{ display:inline; }
     .levels{ display:flex; gap:6px; margin-top:4px; flex-wrap:wrap; }
     .lv{ font-size:12px; padding:1px 6px; border:1px solid var(--surface-border); color:var(--gray-300); white-space:nowrap; line-height:1.4; }
     .lv b{ color:#fff; }
@@ -280,6 +282,7 @@ const SEED_SNAPSHOT = JSON.parse($("#seed-snapshot").textContent);
 /* ---------- estado en memoria ---------- */
 let cfg, roster, store, rotIdx = 0, countdown = 0, paused = false, corsSeen = false;
 let everLive = false;
+const openKeys = new Set();   // filas con la API key visible (se conservan entre re-renders)
 
 /* ---------- persistencia ---------- */
 function loadCfg(){
@@ -449,11 +452,11 @@ function rowHTML(p, rank){
   else if (act) statusPill = `<span class="pill play">▶ Jugando ahora · ${esc(LEVEL_SHORT[act.id]||"")}</span>`;
   else statusPill = `<span class="pill idle">■ Sin partida</span>`;
 
-  // última actualización de esta fila
-  const updated = `<div class="row-updated">🕒 Última actualización: ${esc(relTime(st.ts))}</div>`;
+  // última actualización + apikey (visible solo al pinchar la fila)
+  const updated = `<div class="row-updated">${esc(relTime(st.ts))}<span class="row-key"> (${esc(key)})</span></div>`;
 
   return `
-  <div class="row ${rankCls} ${playCls} ${errCls}" data-key="${esc(key)}">
+  <div class="row ${rankCls} ${playCls} ${errCls} ${openKeys.has(key)?'open':''}" data-key="${esc(key)}">
     <div class="rank">${medal?`<span class="medal">${medal}</span>`:(rank?`#${rank}`:"—")}</div>
     <div class="who">
       <div class="name">${esc(p.name)} ${p.exclude_ranking?`<span class="badge staff">staff</span>`:""}</div>
@@ -476,8 +479,20 @@ function render(){
   } else {
     $("#excluded-wrap").style.display = "none";
   }
+  wireRowToggles();
   updateModeChip();
   $("#interval-label").textContent = cfg.interval;
+}
+
+// click en la fila: muestra/oculta la API key junto a "hace ..."
+function wireRowToggles(){
+  $$(".row[data-key]").forEach(row=>{
+    row.onclick = ()=>{
+      const k = row.getAttribute("data-key");
+      if (openKeys.has(k)){ openKeys.delete(k); row.classList.remove("open"); }
+      else { openKeys.add(k); row.classList.add("open"); }
+    };
+  });
 }
 
 // re-render incremental de una fila concreta (para el refresco en diferido)
