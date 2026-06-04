@@ -131,7 +131,7 @@
     .row{
       display:grid; grid-template-columns:46px 1fr auto; gap:12px; align-items:center;
       border:3px solid var(--surface-border); background:var(--surface-alt);
-      padding:8px 12px; cursor:pointer; transition:border-color .2s, background .2s;
+      padding:8px 12px; transition:border-color .2s, background .2s;
     }
     .row:hover{ border-color:var(--gray-400); }
     .row.rank-1{ border-color:var(--tertiary); }
@@ -152,6 +152,7 @@
       line-height:1.2; margin-top:2px; cursor:copy; user-select:all; display:block; }
     .token:hover{ color:var(--primary-100); }
     .token .kf{ color:var(--surface-border); margin-right:4px; }
+    .row-updated{ font-size:12px; color:var(--text-muted); margin-top:5px; }
     .levels{ display:flex; gap:6px; margin-top:4px; flex-wrap:wrap; }
     .lv{ font-size:12px; padding:1px 6px; border:1px solid var(--surface-border); color:var(--gray-300); white-space:nowrap; line-height:1.4; }
     .lv b{ color:#fff; }
@@ -279,14 +280,15 @@ const SEED_SNAPSHOT = JSON.parse($("#seed-snapshot").textContent);
 /* ---------- estado en memoria ---------- */
 let cfg, roster, store, rotIdx = 0, countdown = 0, paused = false, corsSeen = false;
 let everLive = false;
-const openKeys = new Set();   // filas desplegadas (se conservan entre re-renders)
 
 /* ---------- persistencia ---------- */
 function loadCfg(){
   const WORKER = "https://adventure-cors.adventure-unica.workers.dev";
-  const def = { interval:12, base:WORKER, paused:false };
+  const def = { interval:5, base:WORKER, paused:false };
   try { cfg = Object.assign(def, JSON.parse(localStorage.getItem(LS.cfg)||"{}")); }
   catch { cfg = def; }
+  // Rotación cada 5 segundos por usuario (forzado, ignora ajustes previos).
+  cfg.interval = 5;
   // La API directa no admite CORS: si quedó guardada, migramos al proxy.
   if (cfg.base === "https://adventure.wietsevenema.eu") cfg.base = WORKER;
   paused = !!cfg.paused;
@@ -335,13 +337,14 @@ function roomName(key){
   return null;
 }
 function relTime(ts){
-  if (!ts) return "snapshot";
+  if (!ts) return "sin datos";
   const s = Math.floor((Date.now()-ts)/1000);
-  if (s < 5) return "ahora";
-  if (s < 60) return `hace ${s}s`;
+  if (s < 5) return "ahora mismo";
+  if (s < 60) return `hace ${s} segundo${s===1?"":"s"}`;
   const m = Math.floor(s/60);
-  if (m < 60) return `hace ${m}m`;
-  return `hace ${Math.floor(m/60)}h`;
+  if (m < 60) return `hace ${m} minuto${m===1?"":"s"}`;
+  const h = Math.floor(m/60);
+  return `hace ${h} hora${h===1?"":"s"}`;
 }
 
 /* ---------- API (en diferido / background) ---------- */
@@ -446,31 +449,21 @@ function rowHTML(p, rank){
   else if (act) statusPill = `<span class="pill play">▶ Jugando ahora · ${esc(LEVEL_SHORT[act.id]||"")}</span>`;
   else statusPill = `<span class="pill idle">■ Sin partida</span>`;
 
-  // detalle expandible
-  const lookDesc = (st.look && st.look.description) ? st.look.description : "";
-  const detail = `
-    <div class="detail">
-      ${room ? `<div><span class="room-name">📍 ${esc(room)}</span></div>`:""}
-      ${lookDesc ? `<div class="room-desc">${esc(lookDesc)}</div>`:""}
-      ${act ? `<div>Nivel en curso: <b>${esc(act.name)}</b></div>`:""}
-      ${inv ? `<div class="inv">🎒 Inventario (${inv.length}): ${inv.length? esc(inv.join(", ")) : "vacío"}</div>`:""}
-      ${(st.error && st.status==="bad") ? `<div style="color:var(--danger-300)">⚠ ${esc(st.error)}</div>`:""}
-      <div style="color:var(--text-muted);font-size:13px;margin-top:6px">key …${esc(key.slice(-8))}</div>
-    </div>`;
+  // última actualización de esta fila
+  const updated = `<div class="row-updated">🕒 Última actualización: ${esc(relTime(st.ts))}</div>`;
 
   return `
-  <div class="row ${rankCls} ${playCls} ${errCls} ${openKeys.has(key)?'open':''}" data-key="${esc(key)}">
+  <div class="row ${rankCls} ${playCls} ${errCls}" data-key="${esc(key)}">
     <div class="rank">${medal?`<span class="medal">${medal}</span>`:(rank?`#${rank}`:"—")}</div>
     <div class="who">
       <div class="name">${esc(p.name)} ${p.exclude_ranking?`<span class="badge staff">staff</span>`:""}</div>
-      <div class="token" data-copy="${esc(key)}" title="Click para copiar la API key"><span class="kf">🔑</span>${esc(key)}</div>
       <div class="levels">${lvls}${statusPill}</div>
+      ${updated}
     </div>
     <div class="score">
       <div class="pts">${total.toLocaleString("es-ES")}</div>
       <div class="lbl">puntos</div>
     </div>
-    ${detail}
   </div>`;
 }
 
@@ -483,7 +476,6 @@ function render(){
   } else {
     $("#excluded-wrap").style.display = "none";
   }
-  wireRowToggles();
   updateModeChip();
   $("#interval-label").textContent = cfg.interval;
 }
@@ -496,26 +488,6 @@ function renderRowState(key, flash=false){
     const el = $(`.row[data-key="${CSS.escape(norm(key))}"]`);
     if (el){ el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"), 1100); }
   }
-}
-
-function wireRowToggles(){
-  $$(".row[data-key]").forEach(row=>{
-    row.onclick = ()=>{
-      const k = row.getAttribute("data-key");
-      if (openKeys.has(k)){ openKeys.delete(k); row.classList.remove("open"); }
-      else { openKeys.add(k); row.classList.add("open"); }
-    };
-  });
-  $$(".token[data-copy]").forEach(t=>{
-    t.onclick = (e)=>{
-      e.stopPropagation();            // no desplegar la fila
-      const v = t.getAttribute("data-copy");
-      navigator.clipboard?.writeText(v).then(()=>{
-        const old = t.querySelector(".kf");
-        if (old){ old.textContent = "✓"; setTimeout(()=>old.textContent="🔑", 900); }
-      }).catch(()=>{});
-    };
-  });
 }
 
 function updateModeChip(){
