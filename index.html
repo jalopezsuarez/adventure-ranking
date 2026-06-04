@@ -449,7 +449,7 @@ function rowHTML(p, rank){
   // indicador de estado (va tras los chips L0/L1/L2)
   let statusPill;
   if (st.status==="bad") statusPill = `<span class="pill bad">✕ Key inválida</span>`;
-  else if (act) statusPill = `<span class="pill play">▶ Jugando ahora · ${esc(LEVEL_SHORT[act.id]||"")}</span>`;
+  else if (act) statusPill = "";
   else statusPill = `<span class="pill idle">■ Sin partida</span>`;
 
   // última actualización + apikey (visible solo al pinchar la fila)
