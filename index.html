@@ -108,7 +108,7 @@
 
     /* ---- barra de control ---- */
     .controlbar{ display:flex; flex-wrap:wrap; align-items:center; gap:12px;
-      padding:14px 16px; margin-bottom:24px; cursor:pointer; user-select:none; }
+      padding:14px 16px; margin-top:24px; cursor:pointer; user-select:none; }
     .controlbar:hover{ border-color:var(--secondary); }
     .controlbar:active{ background:#13351f; }
     .refresh-hint{ color:var(--secondary-300)!important; margin-left:auto; font-weight:700; }
@@ -134,7 +134,7 @@
       padding:8px 12px; cursor:pointer; transition:border-color .2s, background .2s;
     }
     .row:hover{ border-color:var(--gray-400); }
-    .rankhead{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    .rankhead{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
     .rank-tabs{ display:flex; gap:6px; flex-wrap:wrap; }
     .rank-tab{ cursor:pointer; font-family:var(--pixel); font-size:11px; line-height:1.4; text-transform:uppercase;
       background:var(--surface); color:var(--text-muted); border:3px solid var(--surface-border);
@@ -232,19 +232,7 @@
   <div class="page">
 
     <h1 class="title">Operator Leaderboard</h1>
-    <p class="subtitle">Reclamation HQ · ranking en vivo de operadores — actualización en diferido</p>
-
-    <!-- Recuadro de info (toca para refrescar ya) -->
-    <div class="controlbar pixel-border" id="infobox" title="Toca para refrescar ahora">
-      <div class="status-chips">
-        <span class="chip"><span id="mode-dot" class="dot snap"></span><b id="mode-text">Snapshot</b></span>
-        <span class="chip">Próximo refresco en <b id="countdown">—</b>s</span>
-        <span class="chip">Siguiente: <b id="next-player">—</b></span>
-        <span class="chip">Actualizado: <b id="last-update">—</b></span>
-        <span class="chip">Intervalo: <b id="interval-label">—</b>s</span>
-        <span class="chip refresh-hint">↻ toca para refrescar ya</span>
-      </div>
-    </div>
+    <p class="subtitle">Ranking - Formacion Agentes UNICA</p>
 
     <div class="rankhead">
       <h2 class="section">▸ Ranking</h2>
@@ -260,6 +248,18 @@
     <div id="excluded-wrap" style="display:none">
       <div class="excluded-head">Fuera de ranking (staff / pruebas)</div>
       <div id="board-excluded" class="board"></div>
+    </div>
+
+    <!-- Recuadro de info / temporizador (toca para refrescar ya) -->
+    <div class="controlbar pixel-border" id="infobox" title="Toca para refrescar ahora">
+      <div class="status-chips">
+        <span class="chip"><span id="mode-dot" class="dot snap"></span><b id="mode-text">Snapshot</b></span>
+        <span class="chip">Próximo refresco en <b id="countdown">—</b>s</span>
+        <span class="chip">Siguiente: <b id="next-player">—</b></span>
+        <span class="chip">Actualizado: <b id="last-update">—</b></span>
+        <span class="chip">Intervalo: <b id="interval-label">—</b>s</span>
+        <span class="chip refresh-hint">↻ toca para refrescar ya</span>
+      </div>
     </div>
 
     <div id="cors-banner" class="banner"></div>
@@ -440,12 +440,16 @@ function maybeShowCorsBanner(){
 
 /* ---------- render ---------- */
 function rankedAndExcluded(){
+  // A igualdad de puntos en la categoría, gana quien tenga más puntuación General.
+  const cmp = (a,b)=> b.total - a.total
+    || totalScore(b.p.api_key) - totalScore(a.p.api_key)
+    || a.p.name.localeCompare(b.p.name);
   const ranked = roster.filter(p=>!p.exclude_ranking)
     .map(p=>({p, total:scoreFor(p.api_key)}))
-    .sort((a,b)=> b.total - a.total || a.p.name.localeCompare(b.p.name));
+    .sort(cmp);
   const excluded = roster.filter(p=>p.exclude_ranking)
     .map(p=>({p, total:scoreFor(p.api_key)}))
-    .sort((a,b)=> b.total - a.total || a.p.name.localeCompare(b.p.name));
+    .sort(cmp);
   return { ranked, excluded };
 }
 
