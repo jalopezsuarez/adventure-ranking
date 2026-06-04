@@ -232,7 +232,7 @@
   <div class="page">
 
     <h1 class="title">Operator Leaderboard</h1>
-    <p class="subtitle">Ranking - Formacion Agentes UNICA</p>
+    <p class="subtitle">Formacion agentes UNICA - Junio 2026 (Google)</p>
 
     <div class="rankhead">
       <h2 class="section">▸ Ranking</h2>
@@ -478,8 +478,7 @@ function rowHTML(p, rank){
   // indicador de estado (va tras los chips L0/L1/L2)
   let statusPill;
   if (st.status==="bad") statusPill = `<span class="pill bad">✕ Key inválida</span>`;
-  else if (act) statusPill = "";
-  else statusPill = `<span class="pill idle">■ Sin partida</span>`;
+  else statusPill = "";
 
   // última actualización + apikey (visible solo al pinchar la fila)
   const updated = `<div class="row-updated">${esc(relTime(st.ts))}<span class="row-key"> | ${esc(key)}</span></div>`;
